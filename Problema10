@@ -1,0 +1,272 @@
+#include <iostream>
+#include <windows.h>
+#include <string>
+#include <cstdlib>
+using namespace std;
+//Clase Socio
+class Socio {
+private:
+    int NumeroSocio;
+    string NombreSocio;
+    string Domicilio;
+    int AnioIngreso;
+public:
+    Socio() {}
+    friend ostream& operator<<(ostream& O, Socio& x) {
+        O << "\nNumero de socio: " << x.NumeroSocio;
+        O << "\nNombre: " << x.NombreSocio;
+        O << "\nDomicilio: " << x.Domicilio;
+        O << "\nAnio de Ingreso: " << x.AnioIngreso;
+        return O;
+    }
+    friend istream& operator>>(istream& I, Socio& x) {
+        cout << "\nNumero de socio: ";
+        I >> x.NumeroSocio;
+        cout << "Nombre: ";
+        I >> x.NombreSocio;
+        cout << "Domicilio: ";
+        I >> x.Domicilio;
+        cout << "Anio de Ingreso: ";
+        I >> x.AnioIngreso;
+        return I;
+    }
+
+    int getIng() {
+        return AnioIngreso;
+    }
+    int getNumS() {
+        return NumeroSocio;
+    }
+
+    const string& getNomS() const {
+        return NombreSocio;
+    }
+
+    const string& getDomi() const {
+        return Domicilio;
+    }
+};
+//ClaseLista
+class ListaLigada {
+private:
+    struct node {
+        Socio data;
+        node* sig;
+        node() :sig(nullptr) {};
+    };
+    node* lista;
+public:
+    ListaLigada() :lista(nullptr) {};
+    bool vacia() const;
+    node* ultimo() const;
+    node* primero() const;
+    node* anterior(node* pos) const;
+    bool insertar(Socio elem);
+    bool eliminar(node* pos);
+    void imprimir() const;
+    void Buscar(string, string);
+    void insercion(node* aux);
+
+};
+//Funciones
+void ListaLigada::Buscar(string Nom, string Dom) {
+    node* aux = lista;
+    int i = 0;
+    system("cls");
+    while (aux != nullptr) {
+        if (aux->data.getNomS() == Nom && aux->data.getDomi() == Dom) {
+            cout << "\nSocio encontrado con exito: \n" << aux->data;
+            i = 1;
+            cout<<"\n";
+            system("Color A4");
+            system("pause");
+            system("cls");
+        }
+        aux = aux->sig;
+    }
+    if (i == 0) {
+        system("Color 4F");
+        cout << "\nEl socio que intenta buscar no esta dado de alta\n";
+        system("pause");
+        system("cls");
+    }
+}
+
+void ListaLigada::imprimir() const {
+    node* aux = lista;
+    while (aux != nullptr) {
+        cout << aux->data << "\n";
+        aux = aux->sig;
+    }
+}
+
+bool ListaLigada::eliminar(node* pos) {
+    system("cls");
+    if (vacia() || pos == nullptr) {
+        return false;
+    }
+    if (pos == lista) {
+        lista = lista->sig;
+    }
+    else {
+        anterior(pos)->sig = pos->sig;
+    }
+    delete pos;
+    return true;
+}
+
+bool ListaLigada::insertar(Socio elem) {
+    node* nuevo = new node;
+    nuevo->data = elem;
+
+    if (lista == nullptr) {
+        lista = nuevo;
+        system("cls");
+        cout << "Socio insertado correctamente.\n";
+        system("Color A4");
+        system("pause");
+        system("cls");
+        return true;
+    }
+
+    node* actual = lista;
+    while (actual != nullptr) {
+        if (actual->data.getNumS() == elem.getNumS()) {
+            system("cls");
+            cout << "\n\nEste numero de socio ya esta en uso.\n";
+            system("Color 4F");
+            system("pause");
+            system("cls");
+            delete nuevo;
+            return false;
+        }
+        actual = actual->sig;
+    }
+    if (elem.getNumS() < lista->data.getNumS()) {
+        nuevo->sig = lista;
+        lista = nuevo;
+        return true;
+    }
+    node* prev = nullptr;
+    node* curr = lista;
+    while (curr != nullptr && curr->data.getNumS() < elem.getNumS()) {
+        prev = curr;
+        curr = curr->sig;
+    }
+    nuevo->sig = curr;
+    prev->sig = nuevo;
+    return true;
+}
+
+
+ListaLigada::node* ListaLigada::anterior(node* pos) const {
+    if (vacia() || pos == nullptr) {
+        return nullptr;
+    }
+    node* aux = lista;
+    while (aux != nullptr && aux->sig != pos) {
+        aux = aux->sig;
+    }
+    return aux;
+}
+
+ListaLigada::node* ListaLigada::primero() const {
+    if (vacia()) {
+        return nullptr;
+    }
+    return lista;
+}
+
+ListaLigada::node* ListaLigada::ultimo() const {
+    if (vacia()) {
+        return nullptr;
+    }
+    node* aux = lista;
+    while (aux->sig != nullptr) {
+        aux = aux->sig;
+    }
+    return aux;
+}
+
+bool ListaLigada::vacia() const {
+    if (lista == nullptr)
+        return true;
+    return false;
+}
+
+int menu();
+
+int main()
+{
+    ListaLigada milista;
+    Socio x;
+    int opc, total = 0;
+    string Nombre, Domicilio;
+    do {
+        opc = menu();
+        cout << "\n";
+        switch (opc) {
+        case 1: {
+                system("cls");
+                cout << "Ingresa datos\n";
+                cin >> x;
+                if (milista.insertar(x)) {
+                    total++;
+                }
+                cout << "\n\n";
+            break;
+                }
+        case 2:
+                system("cls");
+                if (milista.eliminar(milista.ultimo())) {
+                    cout << "Socio dado de baja con exito\n\n";
+                    system("Color A4");
+                    total--; 
+                } else {
+                    cout << "No se pudo dar de baja el socio o esta vacia la lista.\n\n";
+                    system("Color 4F");
+                }
+                system("pause");
+                break;
+        case 3:
+            system("cls");
+            milista.imprimir();
+            cout << "\n\n";
+            system("pause");
+            break;
+        case 4:
+            system("cls");
+            cout << "Escribe el nombre de socio que desea buscar\n";
+            cin >> Nombre;
+            cout << "\nEscribe el domicilio tambien del socio que desea buscar\n";
+            cin >> Domicilio;
+            milista.Buscar(Nombre, Domicilio);
+            break;
+        case 5:
+            system("cls");
+            cout << "\nTotal de socios registrados en el club:\t" << total;
+            cout << "\n\n\n";
+            system("pause");
+            break;
+        case 6:
+            break;
+        }
+    } while (opc != 6);
+    return 0;
+}
+
+int menu() {
+    int opc; 
+    system("Color F0"); 
+    system("cls");
+    cout << "-------MENU-----------\n"
+        << "1. Registrar un nuevo socio\n"
+        << "2. Dar de baja un socio\n"
+        << "3. Generar reporte de los socios del club\n"
+        << "4. Buscar un socio\n"
+        << "5. Calcular e imprimir total de socios registrados\n"
+        << "6. Salir\n"
+        << "\nElige tu opcion: \t";
+    cin >> opc;
+    return opc;
+}
